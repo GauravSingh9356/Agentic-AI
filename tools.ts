@@ -8,7 +8,9 @@ export const createEventTool = tool(
   {
     name: "create-event",
     description: "Call to create a calendar event",
-    schema: z.object({}),
+    schema: z.object({
+      input: z.string().describe("The event details in natural language"),
+    }),
   }
 );
 

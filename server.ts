@@ -1,24 +1,30 @@
 import express from "express";
 import { google } from "googleapis";
-
-import tokens from "./tokens.json";
+import cors from "cors";
+import { main } from ".";
 
 const app = express();
+app.use(cors());
+app.use(express.json());
 
 const PORT = process.env.PORT || 3600;
-
-export const oauth2Client = new google.auth.OAuth2(
-  process.env.GOOGLE_CLIENT_ID,
-  process.env.GOOGLE_CLIENT_SECRET,
-  process.env.GOOGLE_REDIRECT_URL
-);
-oauth2Client.setCredentials(tokens);
 
 // generate a url that asks permissions for Google Calendar scopes
 const scopes = ["https://www.googleapis.com/auth/calendar"];
 
-app.get("/", (req, res) => {
-  res.send("Personal Assistant Server is running.");
+app.post("/", async (req, res) => {
+  const { threadId, message } = req.body;
+  if (!threadId || !message) {
+    return res.status(400).json({
+      message: "threadId and message are required",
+    });
+  }
+
+  const assistantReply = await main(threadId, message);
+
+  return res.json({
+    message: assistantReply,
+  });
 });
 
 app.get("/auth", (req, res) => {

@@ -1,9 +1,9 @@
 import { tool } from "@langchain/core/tools";
 import { google } from "googleapis";
+import tokens from "./tokens.json";
 import { TavilySearch } from "@langchain/tavily";
 
 import z from "zod";
-import { oauth2Client } from "./server";
 
 type paramsType = {
   q: string;
@@ -28,12 +28,19 @@ type CancelByNameParams = {
   date: string; // e.g. "2026-01-04"
 };
 
-const calendar = google.calendar({ version: "v3", auth: oauth2Client });
-
 export const searchTool = new TavilySearch({
-  maxResults: 3,
+  maxResults: 5,
   topic: "general",
 });
+
+export const oauth2Client = new google.auth.OAuth2(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+  process.env.GOOGLE_REDIRECT_URL
+);
+oauth2Client.setCredentials(tokens);
+
+const calendar = google.calendar({ version: "v3", auth: oauth2Client });
 
 export const createEventTool = tool(
   async function (params: EventData) {

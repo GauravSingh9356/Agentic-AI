@@ -11,15 +11,82 @@ type paramsType = {
   timeMax: string;
 };
 
+type Attendee = {
+  email: string;
+  displayName?: string;
+};
+
+type EventData = {
+  summary: string;
+  start: { dateTime: string; timeZone: string };
+  end: { dateTime: string; timeZone: string };
+  attendees: Attendee[];
+};
+
 export const createEventTool = tool(
-  async function ({ input: string }) {
-    return "The meeting has been scheduled.";
+  async function (params: EventData) {
+    try {
+      const { summary, start, end, attendees } = params;
+
+      console.log(params);
+
+      const response = await calendar.events.insert({
+        calendarId: "primary",
+        sendUpdates: "all",
+        conferenceDataVersion: 1,
+        requestBody: {
+          summary: summary,
+          start: {
+            dateTime: start.dateTime,
+            timeZone: start.timeZone,
+          },
+          end: {
+            dateTime: end.dateTime,
+            timeZone: end.timeZone,
+          },
+          attendees: attendees,
+          conferenceData: {
+            createRequest: {
+              requestId: `meet-${Date.now()}`,
+              conferenceSolutionKey: {
+                type: "hangoutsMeet",
+              },
+            },
+          },
+        },
+      } as any);
+
+      console.log(response.data);
+      return "Event created successfully.";
+    } catch (error) {
+      console.error("Error creating event:", error);
+    }
+    return "Failed to create event.";
   },
   {
     name: "create-event",
-    description: "Call to create a calendar event",
+    description: "Call to create the calendar event",
     schema: z.object({
-      input: z.string().describe("The event details in natural language"),
+      summary: z.string().describe("The event summary"),
+      start: z.object({
+        dateTime: z.string().describe("The start date and time of the event"),
+        timeZone: z.string().describe("The time zone of the event"),
+      }),
+      end: z.object({
+        dateTime: z.string().describe("The end date and time of the event"),
+        timeZone: z.string().describe("The time zone of the event"),
+      }),
+      attendees: z
+        .array(
+          z.object({
+            email: z.string().describe("The email address of the attendee"),
+            displayName: z
+              .string()
+              .optional()
+              .describe("The display name of the attendee"),
+          })
+        )
+        .describe("List of attendees for the event"),
     }),
   }
 );

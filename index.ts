@@ -106,5 +106,3 @@ Current time zone: ${timeZoneString}
   console.log(result.messages[result.messages.length - 1]?.content);
   return result.messages[result.messages.length - 1]?.content;
 }
-
-// main("test_thread_id", "hi");

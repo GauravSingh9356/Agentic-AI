@@ -47,12 +47,22 @@ async function main() {
       thread_id: "personal-assistant-chat",
     },
   };
+  const currenDateTime = new Date().toLocaleString("sv-SE").replace(" ", "T");
+  const timeZoneString = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
   const result = await app.invoke(
     {
       messages: [
         {
+          role: "system",
+          content: `You are a Smart Personal Assistant named JARVIS. You help manage my calendar. 
+          Current datetime: ${currenDateTime}.
+          Current timezone string: ${timeZoneString}`,
+        },
+        {
           role: "user",
-          content: "Do I have any meeting today and tomorrow?",
+          content:
+            "hey JARVIS, please schedule a meeting with John with email john@example.com about discussing the marketing and reseach today from 5 PM to 8 PM.",
         },
       ],
     },

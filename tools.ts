@@ -142,14 +142,10 @@ export const getEventsTool = tool(
         ),
       timeMin: z
         .string()
-        .describe(
-          "The start time to fetch events from (in UTC format) for the event"
-        ),
+        .describe("The start time to fetch events from for the event"),
       timeMax: z
         .string()
-        .describe(
-          "The end time to fetch events until (in UTC format) for the event"
-        ),
+        .describe("The end time to fetch events until for the event"),
     }),
   }
 );

@@ -1,8 +1,15 @@
 import { ChatGroq } from "@langchain/groq";
 import { createEventTool, getEventsTool } from "./tools";
-import { END, MessagesAnnotation, StateGraph } from "@langchain/langgraph";
+import {
+  END,
+  MessagesAnnotation,
+  StateGraph,
+  MemorySaver,
+} from "@langchain/langgraph";
 import { ToolNode } from "@langchain/langgraph/prebuilt";
 import type { AIMessage } from "@langchain/core/messages";
+
+const memorySaver = new MemorySaver();
 
 const tools: any = [createEventTool, getEventsTool];
 const toolNode = new ToolNode(tools);
@@ -32,17 +39,25 @@ const graph = new StateGraph(MessagesAnnotation)
     tools: "tools",
   });
 
-const app = graph.compile();
+const app = graph.compile({ checkpointer: memorySaver });
 
 async function main() {
-  const result = await app.invoke({
-    messages: [
-      {
-        role: "user",
-        content: "Do I have any meeting today and tomorrow?",
-      },
-    ],
-  });
+  const config = {
+    configurable: {
+      thread_id: "personal-assistant-chat",
+    },
+  };
+  const result = await app.invoke(
+    {
+      messages: [
+        {
+          role: "user",
+          content: "Do I have any meeting today and tomorrow?",
+        },
+      ],
+    },
+    config
+  );
 
   console.log(result.messages[result.messages.length - 1]?.content);
 }

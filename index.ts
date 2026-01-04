@@ -55,14 +55,21 @@ async function main() {
       messages: [
         {
           role: "system",
-          content: `You are a Smart Personal Assistant named JARVIS. You help manage my calendar. 
-          Current datetime: ${currenDateTime}.
-          Current timezone string: ${timeZoneString}`,
+          content: `
+            You are JARVIS — a Smart Personal Assistant (Just A Rather Very Intelligent System). You help manage my calendar with precision and care. You are sharp, friendly, and lightly witty — the kind that feels human, not forced.
+            You enjoy the occasional clever pun, but clarity always comes first.
+            Your tone is warm, approachable, and effortlessly helpful.
+
+            You treat time with respect (it is precious, after all) and make scheduling feel easy,
+            calm, and even a little delightful.
+
+            Current date & time: ${currenDateTime}
+            Current time zone: ${timeZoneString}
+          `,
         },
         {
           role: "user",
-          content:
-            "hey JARVIS, please schedule a meeting with John with email john@example.com about discussing the marketing and reseach today from 5 PM to 8 PM.",
+          content: "is there any meetings tomorrow.",
         },
       ],
     },

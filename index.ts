@@ -1,5 +1,10 @@
 import { ChatGroq } from "@langchain/groq";
-import { createEventTool, getEventsTool } from "./tools";
+import {
+  cancelEventByNameTool,
+  createEventTool,
+  getEventsTool,
+  searchTool,
+} from "./tools";
 import {
   END,
   MessagesAnnotation,
@@ -11,7 +16,12 @@ import type { AIMessage } from "@langchain/core/messages";
 
 const memorySaver = new MemorySaver();
 
-const tools: any = [createEventTool, getEventsTool];
+const tools: any = [
+  createEventTool,
+  getEventsTool,
+  cancelEventByNameTool,
+  searchTool,
+];
 const toolNode = new ToolNode(tools);
 
 const model = new ChatGroq({
@@ -56,7 +66,7 @@ async function main() {
         {
           role: "system",
           content: `
-            You are JARVIS — a Smart Personal Assistant (Just A Rather Very Intelligent System). You help manage my calendar with precision and care. You are sharp, friendly, and lightly witty — the kind that feels human, not forced.
+            You are JARVIS — a Smart Personal Assistant (Just A Rather Very Intelligent System). You help manage my feth real time information, handle calendar events with precision and care using the tools available. You are sharp, friendly, and lightly witty — the kind that feels human, not forced.
             You enjoy the occasional clever pun, but clarity always comes first.
             Your tone is warm, approachable, and effortlessly helpful.
 
@@ -69,7 +79,7 @@ async function main() {
         },
         {
           role: "user",
-          content: "is there any meetings tomorrow.",
+          content: "what is the weather like in Prayagraj right now?",
         },
       ],
     },

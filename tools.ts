@@ -1,9 +1,9 @@
 import { tool } from "@langchain/core/tools";
 import { google } from "googleapis";
+import { TavilySearch } from "@langchain/tavily";
+
 import z from "zod";
 import { oauth2Client } from "./server";
-
-const calendar = google.calendar({ version: "v3", auth: oauth2Client });
 
 type paramsType = {
   q: string;
@@ -22,6 +22,18 @@ type EventData = {
   end: { dateTime: string; timeZone: string };
   attendees: Attendee[];
 };
+
+type CancelByNameParams = {
+  query: string; // e.g. "abc"
+  date: string; // e.g. "2026-01-04"
+};
+
+const calendar = google.calendar({ version: "v3", auth: oauth2Client });
+
+export const searchTool = new TavilySearch({
+  maxResults: 3,
+  topic: "general",
+});
 
 export const createEventTool = tool(
   async function (params: EventData) {
@@ -149,3 +161,87 @@ export const getEventsTool = tool(
     }),
   }
 );
+
+export const cancelEventByNameTool = tool(
+  async function (params: CancelByNameParams) {
+    try {
+      const { query, date } = params;
+
+      const timeMin = new Date(`${date}T00:00:00`).toISOString();
+      const timeMax = new Date(`${date}T23:59:59`).toISOString();
+
+      const events = await findMatchingEvents({
+        query,
+        timeMin,
+        timeMax,
+      });
+
+      if (events.length === 0) {
+        return `I couldn’t find any meetings today matching "${query}".`;
+      }
+
+      if (events.length > 1) {
+        return (
+          "I found multiple matching meetings:\n" +
+          events
+            .map(
+              (e, i) =>
+                `${i + 1}. ${e.summary} at ${
+                  e.start?.dateTime || e.start?.date
+                }`
+            )
+            .join("\n") +
+          "\nPlease tell me which one to cancel."
+        );
+      }
+
+      const event = events[0];
+
+      if (!event || !event.id) {
+        console.error("Event not found or missing id:", event);
+        return "I ran into trouble while cancelling the meeting.";
+      }
+
+      await calendar.events.delete({
+        calendarId: "primary",
+        eventId: event.id,
+        sendUpdates: "all",
+      });
+
+      return `I've cancelled "${event.summary}" for today and notified everyone.`;
+    } catch (error) {
+      console.error("Error cancelling event:", error);
+      return "I ran into trouble while cancelling the meeting.";
+    }
+  },
+  {
+    name: "cancel-event-by-name",
+    description:
+      "Cancel a calendar meeting using natural language like name and date",
+    schema: z.object({
+      query: z.string().describe("Meeting title or attendee name (e.g. 'abc')"),
+      date: z.string().describe("Date of the meeting in YYYY-MM-DD format"),
+    }),
+  }
+);
+
+async function findMatchingEvents({
+  query,
+  timeMin,
+  timeMax,
+}: {
+  query: string;
+  timeMin: string;
+  timeMax: string;
+}) {
+  const response = await calendar.events.list({
+    calendarId: "primary",
+    q: query, // matches title + attendees
+    timeMin,
+    timeMax,
+    singleEvents: true,
+    orderBy: "startTime",
+  });
+
+  return response.data.items || [];
+}

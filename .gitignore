@@ -1,5 +1,6 @@
 # dependencies (bun install)
 node_modules
+tokens.json
 
 # output
 out

@@ -1,15 +1,18 @@
 import express from "express";
 import { google } from "googleapis";
 
+import tokens from "./tokens.json";
+
 const app = express();
 
 const PORT = process.env.PORT || 3600;
 
-const oauth2Client = new google.auth.OAuth2(
+export const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
   process.env.GOOGLE_REDIRECT_URL
 );
+oauth2Client.setCredentials(tokens);
 
 // generate a url that asks permissions for Google Calendar scopes
 const scopes = ["https://www.googleapis.com/auth/calendar"];

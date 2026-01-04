@@ -39,7 +39,7 @@ async function main() {
     messages: [
       {
         role: "user",
-        content: "Do I have any meeting today?",
+        content: "Can you find if there are any meetings today?",
       },
     ],
   });

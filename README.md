@@ -41,7 +41,7 @@ This loop continues until no further actions are required.
 
 Each layer has a single responsibility, making the system modular and extensible.
 
-![]("./HLD.png")
+![](HLD.png)
 
 ---
 
